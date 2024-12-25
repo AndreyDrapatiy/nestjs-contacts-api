@@ -43,5 +43,7 @@ export class AuthController {
 
     res.clearCookie('sessionId');
     res.clearCookie('refreshToken');
+
+    res.status(204).send();
   }
 }
