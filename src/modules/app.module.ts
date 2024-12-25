@@ -10,10 +10,11 @@ const pwd = env('MONGODB_PASSWORD');
 const url = env('MONGODB_URL');
 const db = env('MONGODB_DB');
 
+const mongoStr = `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority`
 
 @Module({
   imports: [
-    MongooseModule.forRoot(`mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=majority` || 'mongodb://localhost:27017'),
+    MongooseModule.forRoot(mongoStr || 'mongodb://localhost:27017'),
     AuthModule
   ],
   controllers: [AppController],
