@@ -69,4 +69,7 @@ export class AuthService {
     };
   }
 
+  async logout(sessionId: string): Promise<void> {
+    await this.sessionModel.deleteOne({ _id: sessionId });
+  }
 }
