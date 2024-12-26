@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose, { Document } from 'mongoose';
+import { Document } from 'mongoose';
 
 @Schema({ versionKey: false, timestamps: false })
 export class Session extends Document {
@@ -19,7 +19,7 @@ export class Session extends Document {
   refreshTokenValidUntil: Date;
 
   // Optionally, ensure that _id is typed correctly as ObjectId
-  _id: string;  // This is just to ensure the type is inferred correctly for _id.
+  _id: string; // This is just to ensure the type is inferred correctly for _id.
 }
 
 export const SessionSchema = SchemaFactory.createForClass(Session);

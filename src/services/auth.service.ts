@@ -21,7 +21,7 @@ import { ResetPasswordDto } from '../dtos/reset-password.dto';
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    @InjectModel(Session.name) private sessionModel: Model<Session>
+    @InjectModel(Session.name) private sessionModel: Model<Session>,
   ) {}
 
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -43,7 +43,9 @@ export class AuthService {
     return createdUser.save();
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string; refreshToken: string; sessionId: string;}> {
+  async login(
+    loginUserDto: LoginUserDto,
+  ): Promise<{ accessToken: string; refreshToken: string; sessionId: string }> {
     const { email, password } = loginUserDto;
 
     const user = await this.userModel.findOne({ email });
@@ -53,7 +55,10 @@ export class AuthService {
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw new HttpException('Email or password is incorrect', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'Email or password is incorrect',
+        HttpStatus.UNAUTHORIZED,
+      );
     }
 
     await this.sessionModel.deleteOne({ userId: user._id });
@@ -121,7 +126,10 @@ export class AuthService {
         html,
       });
     } catch (error) {
-      throw new HttpException('Failed to send email, please try again later.', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new HttpException(
+        'Failed to send email, please try again later.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
@@ -139,7 +147,10 @@ export class AuthService {
       entries = jwt.verify(token, env('JWT_SECRET')) as JwtPayload;
     } catch (err) {
       if (err instanceof Error)
-        throw new HttpException('Token is expired or invalid.', HttpStatus.UNAUTHORIZED);
+        throw new HttpException(
+          'Token is expired or invalid.',
+          HttpStatus.UNAUTHORIZED,
+        );
       throw err;
     }
 
@@ -154,7 +165,10 @@ export class AuthService {
 
     const encryptedPassword = await bcrypt.hash(resetPassword.password, 10);
 
-    await this.userModel.updateOne({ _id: user._id }, { password: encryptedPassword });
+    await this.userModel.updateOne(
+      { _id: user._id },
+      { password: encryptedPassword },
+    );
     await this.sessionModel.deleteOne({ userId: user._id });
   }
 }

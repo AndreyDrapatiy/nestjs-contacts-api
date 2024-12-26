@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Res, Req, HttpCode, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  Req,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from '../services/auth.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { User } from '../schemas/user.schema';
@@ -15,7 +23,7 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   async register(@Body() createUser: CreateUserDto): Promise<User> {
-    return  await this.authService.register(createUser);
+    return await this.authService.register(createUser);
   }
 
   @Post('login')
@@ -40,7 +48,6 @@ export class AuthController {
 
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
-
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     if (req.cookies.sessionId) {
       await this.authService.logout(req.cookies.sessionId);
@@ -53,20 +60,24 @@ export class AuthController {
   @Post('request-reset-password')
   async requestResetPassword(
     @Body() requestResetPassword: RequestResetPasswordDto,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     await this.authService.requestResetPassword(requestResetPassword.email);
 
-    res.status(HttpStatus.OK).json({ message: 'Reset password email sent successfully.' });
+    res
+      .status(HttpStatus.OK)
+      .json({ message: 'Reset password email sent successfully.' });
   }
 
   @Post('reset-password')
   async resetPassword(
     @Body() resetPassword: ResetPasswordDto,
-    @Res() res: Response
+    @Res() res: Response,
   ) {
     await this.authService.resetPassword(resetPassword);
 
-    res.status(HttpStatus.OK).json({ message: 'Password was successfully reset!' });
+    res
+      .status(HttpStatus.OK)
+      .json({ message: 'Password was successfully reset!' });
   }
 }
