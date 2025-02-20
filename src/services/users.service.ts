@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from '../schemas/user.schema';
-import { Model } from 'mongoose';
+import { Model, ObjectId, Schema, Types } from 'mongoose';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -19,5 +20,11 @@ export class UsersService {
     });
 
     return createdUser.save();
+  }
+
+  async updateRefreshToken(userId: Types.ObjectId, refreshToken: string) {
+    const hashedToken = await bcrypt.hash(refreshToken, 10);
+
+    await this.userModel.findByIdAndUpdate(userId, { refreshToken: hashedToken });
   }
 }

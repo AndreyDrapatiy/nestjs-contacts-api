@@ -46,15 +46,28 @@ export class AuthService {
     return result;
   }
 
-
-  async login(user: User): Promise<{ accessToken: string }> {
+  async login(user: User): Promise<{ accessToken: string, refreshToken: string }> {
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const payload = { email: user.email, sub: user._id };
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: env('JWT_SECRET'),
+      expiresIn: '15m',
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: env('JWT_REFRESH_SECRET'),
+      expiresIn: '7d',
+    });
+
+    await this.usersService.updateRefreshToken(user._id, refreshToken);
+
     return {
-      accessToken: this.jwtService.sign(payload),
+      accessToken,
+      refreshToken,
     };
   }
 
@@ -71,44 +84,38 @@ export class AuthService {
     return this.usersService.create(name, email, encryptedPassword);
   }
 
+  async refreshToken(refreshToken: string): Promise<{ accessToken: string, refreshToken: string }> {
+    try {
+      const payload = await this.jwtService.verifyAsync(refreshToken, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
 
-  // async login(
-  //   loginUserDto: LoginUserDto,
-  // ): Promise<{ accessToken: string; refreshToken: string; sessionId: string }> {
-  //   const { email, password } = loginUserDto;
-  //
-  //   const user = await this.userModel.findOne({ email });
-  //   if (!user) {
-  //     throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-  //   }
-  //
-  //   const isMatch = await bcrypt.compare(password, user.password);
-  //   if (!isMatch) {
-  //     throw new HttpException(
-  //       'Email or password is incorrect',
-  //       HttpStatus.UNAUTHORIZED,
-  //     );
-  //   }
-  //
-  //   await this.sessionModel.deleteOne({ userId: user._id });
-  //
-  //   const accessToken = randomBytes(30).toString('base64');
-  //   const refreshToken = randomBytes(30).toString('base64');
-  //
-  //   const session = await this.sessionModel.create({
-  //     userId: user._id,
-  //     accessToken,
-  //     refreshToken,
-  //     accessTokenValidUntil: new Date(Date.now() + FIFTEEN_MINUTES),
-  //     refreshTokenValidUntil: new Date(Date.now() + THIRTY_DAYS),
-  //   });
-  //
-  //   return {
-  //     accessToken: session.accessToken,
-  //     refreshToken: session.refreshToken,
-  //     sessionId: session._id.toString(),
-  //   };
-  // }
+      const user = await this.usersService.findOne(payload.email)
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const newAccessToken = this.jwtService.sign({ email: user.email, sub: user._id }, {
+        secret: process.env.JWT_SECRET,
+        expiresIn: '15m',
+      });
+
+      const newRefreshToken = this.jwtService.sign({ email: user.email, sub: user._id }, {
+        secret: process.env.JWT_REFRESH_SECRET,
+        expiresIn: '7d',
+      });
+
+      await this.usersService.updateRefreshToken(user._id, newRefreshToken);
+
+      return {
+        accessToken: newAccessToken,
+        refreshToken: newRefreshToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+  }
 
   async logout(sessionId: string): Promise<void> {
     await this.sessionModel.deleteOne({ _id: sessionId });
