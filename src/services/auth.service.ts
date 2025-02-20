@@ -62,23 +62,14 @@ export class AuthService {
     const { email, password, name } = createUserDto;
 
     const existingUser = await this.usersService.findOne(email);
-
     if (existingUser) {
       throw new HttpException('Email already in use', HttpStatus.CONFLICT);
     }
 
     const encryptedPassword = await bcrypt.hash(password, 10);
 
-    const createdUser = new this.userModel({
-      name,
-      email,
-      password: encryptedPassword,
-    });
-
-    return createdUser.save();
+    return this.usersService.create(name, email, encryptedPassword);
   }
-
-
 
 
   // async login(
