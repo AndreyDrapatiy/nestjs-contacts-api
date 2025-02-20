@@ -8,6 +8,6 @@ export class CreateUserDto {
   readonly email: string;
 
   @IsString()
-  @MinLength(6) // Ensure a minimum length for the password
+  @MinLength(6)
   readonly password: string;
 }
