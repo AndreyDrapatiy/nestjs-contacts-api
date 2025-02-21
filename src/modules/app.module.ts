@@ -4,6 +4,7 @@ import { AppController } from '../controllers/app.controller';
 import { AppService } from '../services/app.service';
 import env from '../utils/env';
 import { AuthModule } from './auth.module';
+import { ContactModule } from './contact.module';
 
 const user = env('MONGODB_USER');
 const pwd = env('MONGODB_PASSWORD');
@@ -16,6 +17,7 @@ const mongoStr = `mongodb+srv://${user}:${pwd}@${url}/${db}?retryWrites=true&w=m
   imports: [
     MongooseModule.forRoot(mongoStr || 'mongodb://localhost:27017'),
     AuthModule,
+    ContactModule
   ],
   controllers: [AppController],
   providers: [AppService],

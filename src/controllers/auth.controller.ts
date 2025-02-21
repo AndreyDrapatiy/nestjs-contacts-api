@@ -9,15 +9,10 @@ import {
   UseGuards,
   Request, HttpException,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from '../services/auth.service';
 import { CreateUserDto } from '../dtos/create-user.dto';
 import { User } from '../schemas/user.schema';
-import { LoginUserDto } from '../dtos/login-user.dto';
-import { THIRTY_DAYS } from '../constans';
 import {  Response, Request as ExpressRequest } from 'express';
-import { RequestResetPasswordDto } from '../dtos/request-reset-password.dto';
-import { ResetPasswordDto } from '../dtos/reset-password.dto';
 import {LocalAuthGuard} from '../guards/auth/local-auth.guard'
 import env from '../utils/env';
 import { JwtRefreshGuard } from '../guards/auth/jwt.refresh.guard';
@@ -34,11 +29,23 @@ export class AuthController {
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: env('NODE_ENV') === 'production',
-      sameSite: 'strict',
+      sameSite: 'lax',
       path: '/auth/refresh',
     });
 
     return res.json({ accessToken });
+  }
+
+  @Post('logout')
+  async logout(@Request() req: ExpressRequest, @Res() res: Response) {
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: env('NODE_ENV') === 'production',
+      sameSite: 'lax',
+      path: '/auth/refresh',
+    });
+
+    return res.json({ message: 'Logged out successfully' });
   }
 
   @Post('register')
